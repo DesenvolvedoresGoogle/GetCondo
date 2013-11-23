@@ -24,6 +24,8 @@
         android:layout_height="wrap_content"
         android:hint="@string/label_login_email"
         android:singleLine="true"
+        android:layout_marginBottom="20dp"
+        android:background="#FFFFFF"
         android:layout_below="@id/imageLogo"/>
 
     <EditText android:id="@+id/textFieldLoginPassword"
@@ -32,6 +34,7 @@
         android:singleLine="true"
         android:password="true"
         android:hint="@string/label_login_password"
+        android:background="#FFFFFF"
         android:layout_below="@id/textFieldLoginEmail"/>
 
     <Button android:id="@+id/button_login"
