@@ -1,5 +1,7 @@
 package com.developerbus.getcondo;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -11,6 +13,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,6 +23,8 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.provider.MediaStore;
 
@@ -46,6 +51,8 @@ public class CreateIssueFragment extends Fragment {
     Button mButtonCreateIssue;
     Button mButtonImageFromGallery;
     String mEncodedImage;
+    Boolean mSendingIssue = false;
+    ProgressDialog mProgress;
 
     int RESULT_LOAD_IMAGE = 1;
 
@@ -77,7 +84,11 @@ public class CreateIssueFragment extends Fragment {
         mButtonCreateIssue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                createIssue(view);
+                Log.d("CLICK", "OI");
+                if(mSendingIssue == false) {
+                    mSendingIssue = true;
+                    createIssue(view);
+                }
             }
         });
         mButtonImageFromGallery.setOnClickListener(new View.OnClickListener() {
@@ -122,9 +133,9 @@ public class CreateIssueFragment extends Fragment {
     }
 
     public void createIssue(View view) {
+        mProgress = ProgressDialog.show(getActivity(), "Aguarde", "Enviando incidente");
         final Issue issue = new Issue();
         issue.setDescription(mEditDescription.getText().toString());
-
         String url = Settings.apiHostname() + "/condos/" + Settings.getSession().getCondoId() + "/issues?token=" + Settings.getSession().getToken();
         GsonRequest request = new GsonRequest(Request.Method.POST, url, null, createIssueSuccessListener(), createIssueErrorListener()) {
             protected Map<String, String> getParams() throws com.android.volley.AuthFailureError {
@@ -140,6 +151,7 @@ public class CreateIssueFragment extends Fragment {
     }
 
     private Response.Listener createIssueSuccessListener() {
+        mProgress.dismiss();
         return new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -148,7 +160,7 @@ public class CreateIssueFragment extends Fragment {
                 String title = getString(R.string.title_problems);
                 InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(mEditDescription.getWindowToken(), 0);
-
+                mSendingIssue = false;
                 getActivity().getActionBar().setTitle(title);
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, issuesFragment)
